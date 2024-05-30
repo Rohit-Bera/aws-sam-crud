@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  crud-sam-dynamo
+
+  Sample SAM Template for crud-sam-dynamo
+
+Globals:
+  Function:
+    Timeout: 10
+
+    LoggingConfig:
+      LogFormat: JSON
+Resources:
+  UserTable:
+  # AWS::DynamoDB::Table - another type
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: user-table
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+  # Get All User Lambda Function
+  StartServer:
+    Type: AWS::Serverless::Function 
+    Properties:
+    # folder name for the handler functions.
+      CodeUri: rest/
+      Handler: app.StartServerHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+      # trigger
+        StartServerEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+  # GET All User Lambda Function
+  FetchAllUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+    # folder name for the handler functions.
+      CodeUri: rest/
+      Handler: app.fetchAllUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+      # trigger
+        GetUserEvent:
+          Type: Api
+          Properties:
+            Path: /getUsers
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+
+  # GET All User Lambda Function
+  FetchOneUser:
+    Type: AWS::Serverless::Function 
+    Properties:
+    # folder name for the handler functions.
+      CodeUri: rest/
+      Handler: app.fetchOneUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+      # trigger
+        GetUserEvent:
+          Type: Api
+          Properties:
+            Path: /getOneUser/{id}
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+
+  # POST User Lambda Function
+  CreateUser:
+    Type: AWS::Serverless::Function 
+    Properties:
+    # folder name for the handler functions.
+      CodeUri: rest/
+      Handler: app.createUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+      # trigger
+        PostUserEvent:
+          Type: Api
+          Properties:
+            Path: /postUser
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+  # PUT User Lambda Function
+  UpdateUser:
+    Type: AWS::Serverless::Function 
+    Properties:
+    # folder name for the handler functions.
+      CodeUri: rest/
+      Handler: app.updateUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+      # trigger
+        UpdateUserEvent:
+          Type: Api
+          Properties:
+            Path: /updateUser/{id}
+            Method: PUT
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+  # DELETE User Lambda Function
+  DeleteUser:
+    Type: AWS::Serverless::Function 
+    Properties:
+    # folder name for the handler functions.
+      CodeUri: rest/
+      Handler: app.deleteUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      Events:
+      # trigger
+        DeleteUserEvent:
+          Type: Api
+          Properties:
+            Path: /deleteUser/{id}
+            Method: DELETE
+      # Policies 
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+  # DynamoDB 
+
+Outputs:
+  WebEndpoint:
+    Description: "REST API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"

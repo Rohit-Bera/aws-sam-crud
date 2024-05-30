@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "sam-rest-api-dynamo"
+s3_bucket = 'sam-crud-s3'
+s3_prefix = "sam-rest-api-dynamo"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+image_repositories = []
